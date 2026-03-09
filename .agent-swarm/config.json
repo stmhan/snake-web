@@ -1,0 +1,38 @@
+{
+  "$schema": "config.schema.json",
+  "project": {
+    "name": "snake-web",
+    "stack": "Unknown",
+    "testCommand": "",
+    "lintCommand": ""
+  },
+  "agents": {
+    "architect": {
+      "branchPrefix": "feat/issue-",
+      "commitPrefix": "feat",
+      "maxTurns": 100
+    },
+    "critic": {
+      "reviewCriteria": [
+        "Tests exist for new code",
+        "No hardcoded secrets",
+        "Proper error handling",
+        "Code is readable and maintainable"
+      ],
+      "maxDiffKB": 100
+    },
+    "janitor": {
+      "maxRetries": 3,
+      "maxTurns": 30
+    }
+  },
+  "limits": {
+    "agentMaxFileKB": 10,
+    "agentMaxTotalKB": 50
+  },
+  "logging": {
+    "level": "INFO",
+    "fileOutput": true,
+    "logDir": "logs"
+  }
+}
