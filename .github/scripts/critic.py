@@ -125,6 +125,16 @@ def main(pr_number: int) -> int:
                    f"**Review: {review_result}**\n\n{review_body}")
 
     log.info("=== CRITIC COMPLETE === PR #%d - Result: %s", pr_number, review_result)
+
+    # Write result for workflow to trigger janitor if needed.
+    # GITHUB_TOKEN events don't trigger further workflows, so the
+    # workflow must chain the janitor directly based on this output.
+    import os
+    github_output = os.environ.get("GITHUB_OUTPUT")
+    if github_output:
+        with open(github_output, "a", encoding="utf-8") as f:
+            f.write(f"review_result={review_result}\n")
+
     return 0
 
 
