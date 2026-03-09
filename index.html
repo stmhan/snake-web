@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-container">
+    <div id="header">
+      <h1>Snake</h1>
+      <div id="score-display">점수: <span id="score">0</span></div>
+    </div>
+    <canvas id="game-canvas"></canvas>
+    <div id="overlay">
+      <p id="overlay-message">Space 키를 눌러 시작</p>
+    </div>
+    <div id="controls">
+      <p>방향키 또는 WASD로 조작</p>
+    </div>
+  </div>
+  <script src="game.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
