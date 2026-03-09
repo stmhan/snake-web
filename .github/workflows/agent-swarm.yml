@@ -49,14 +49,44 @@ jobs:
           fetch-depth: 0
 
       - name: Run critic agent
+        id: critic
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python .github/scripts/critic.py ${{ github.event.pull_request.number }}
 
+      # GITHUB_TOKEN events don't trigger pull_request_review workflows,
+      # so chain the janitor directly when critic requests changes.
+      - name: Checkout PR branch for janitor
+        if: steps.critic.outputs.review_result == 'CHANGES REQUESTED'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Add fixing label
+        if: steps.critic.outputs.review_result == 'CHANGES REQUESTED'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:fixing"
+
+      - name: Run janitor agent
+        if: steps.critic.outputs.review_result == 'CHANGES REQUESTED'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python .github/scripts/janitor.py ${{ github.event.pull_request.number }}
+
+      - name: Remove fixing label
+        if: always() && steps.critic.outputs.review_result == 'CHANGES REQUESTED'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:fixing"
+
+  # Fix review feedback (manual human review trigger)
   janitor:
     if: >-
       github.event_name == 'pull_request_review' &&
-      github.event.review.state == 'changes_requested'
+      github.event.review.state == 'changes_requested' &&
+      github.event.review.user.type != 'Bot'
     runs-on: [self-hosted, claude-max]
     concurrency:
       group: agent-${{ github.event.pull_request.number }}
