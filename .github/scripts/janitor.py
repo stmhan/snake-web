@@ -43,6 +43,16 @@ def main(pr_number: int) -> int:
     Returns:
         Exit code (0 for success, 1 for failure).
     """
+    # --- Check if PR is still open ---
+    result = run_gh("pr", "view", str(pr_number), "--json", "state")
+    try:
+        state = json.loads(result.stdout).get("state", "")
+    except (json.JSONDecodeError, ValueError):
+        state = ""
+    if state != "OPEN":
+        log.info("PR #%d is %s. Skipping fixes.", pr_number, state or "unknown")
+        return 0
+
     # --- Configuration ---
     cfg = get_agent_config("janitor")
     max_retries = cfg["max_retries"]
