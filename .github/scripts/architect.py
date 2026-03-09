@@ -166,15 +166,15 @@ def main(issue_number: int, issue_title: str) -> int:
 
     if result.returncode != 0:
         # gh pr create exits 1 if a PR already exists for the branch.
-        # Extract the URL from the error message and treat it as success.
-        error_msg = result.stderr or result.stdout
-        if "already exists" in error_msg:
+        # The message may appear in either stdout or stderr depending on gh version.
+        combined = (result.stdout or "") + (result.stderr or "")
+        if "already exists" in combined:
             import re as _re
-            url_match = _re.search(r"(https://github\.com/\S+)", error_msg)
+            url_match = _re.search(r"(https://github\.com/\S+)", combined)
             pr_url = url_match.group(1) if url_match else "(existing PR)"
             log.info("PR already exists: %s", pr_url)
         else:
-            log.error("Failed to create PR: %s", error_msg)
+            log.error("Failed to create PR: %s", result.stderr or result.stdout)
             run_gh("issue", "edit", str(issue_number), "--remove-label", "agent:in-progress")
             return 1
     else:
