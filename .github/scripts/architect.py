@@ -165,12 +165,21 @@ def main(issue_number: int, issue_title: str) -> int:
     )
 
     if result.returncode != 0:
-        log.error("Failed to create PR: %s", result.stderr or result.stdout)
-        run_gh("issue", "edit", str(issue_number), "--remove-label", "agent:in-progress")
-        return 1
-
-    pr_url = result.stdout.strip()
-    log.info("Pull request created: %s", pr_url)
+        # gh pr create exits 1 if a PR already exists for the branch.
+        # Extract the URL from the error message and treat it as success.
+        error_msg = result.stderr or result.stdout
+        if "already exists" in error_msg:
+            import re as _re
+            url_match = _re.search(r"(https://github\.com/\S+)", error_msg)
+            pr_url = url_match.group(1) if url_match else "(existing PR)"
+            log.info("PR already exists: %s", pr_url)
+        else:
+            log.error("Failed to create PR: %s", error_msg)
+            run_gh("issue", "edit", str(issue_number), "--remove-label", "agent:in-progress")
+            return 1
+    else:
+        pr_url = result.stdout.strip()
+        log.info("Pull request created: %s", pr_url)
     log.info("=== ARCHITECT COMPLETE === PR: %s", pr_url)
     run_gh("issue", "edit", str(issue_number), "--remove-label", "agent:in-progress")
     return 0
