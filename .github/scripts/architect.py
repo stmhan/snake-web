@@ -59,7 +59,7 @@ def main(issue_number: int, issue_title: str) -> int:
     log.info("Fetching issue #%d details...", issue_number)
     result = run_gh("issue", "view", str(issue_number), "--json", "body", "--jq", ".body")
     if result.returncode != 0:
-        log.error("Failed to fetch issue #%d: %s", issue_number, result.stdout)
+        log.error("Failed to fetch issue #%d: %s", issue_number, result.stderr or result.stdout)
         return 1
 
     issue_body = result.stdout
@@ -165,7 +165,7 @@ def main(issue_number: int, issue_title: str) -> int:
     )
 
     if result.returncode != 0:
-        log.error("Failed to create PR: %s", result.stdout)
+        log.error("Failed to create PR: %s", result.stderr or result.stdout)
         run_gh("issue", "edit", str(issue_number), "--remove-label", "agent:in-progress")
         return 1
 
