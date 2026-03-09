@@ -14,7 +14,20 @@ permissions:
   issues: write
 
 jobs:
+  ensure-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create required labels if missing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          for label in "agent:implement" "agent:in-progress" "agent:fixing"; do
+            gh label create "$label" --color "6f42c1" --description "Agent Swarm lifecycle label" --force
+          done
+
   architect:
+    needs: ensure-labels
     if: >-
       github.event_name == 'issues' &&
       github.event.label.name == 'agent:implement'
@@ -34,6 +47,7 @@ jobs:
         run: python .github/scripts/architect.py ${{ github.event.issue.number }} "${{ github.event.issue.title }}"
 
   critic:
+    needs: ensure-labels
     if: >-
       github.event_name == 'pull_request' &&
       !contains(github.event.pull_request.title, '[skip-review]') &&
@@ -83,6 +97,7 @@ jobs:
 
   # Fix review feedback (manual human review trigger)
   janitor:
+    needs: ensure-labels
     if: >-
       github.event_name == 'pull_request_review' &&
       github.event.review.state == 'changes_requested' &&
