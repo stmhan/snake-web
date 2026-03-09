@@ -52,7 +52,7 @@ def main(pr_number: int) -> int:
     log.info("Generating diff for PR #%d...", pr_number)
     result = run_git("diff", "origin/main...HEAD")
     if result.returncode != 0:
-        log.error("Failed to generate diff: %s", result.stdout)
+        log.error("Failed to generate diff: %s", result.stderr or result.stdout)
         return 1
 
     diff_string = result.stdout
@@ -99,13 +99,13 @@ def main(pr_number: int) -> int:
         log.info("Review result: %s", review_result)
         result = run_gh("pr", "review", str(pr_number), "--approve", "--body", review_body)
         if result.returncode != 0:
-            log.warning("Failed to post approval review.")
+            log.warning("Failed to post approval review: %s", result.stderr or result.stdout)
     else:
         review_result = "CHANGES REQUESTED"
         log.info("Review result: %s", review_result)
         result = run_gh("pr", "review", str(pr_number), "--request-changes", "--body", review_body)
         if result.returncode != 0:
-            log.warning("Failed to post change-request review.")
+            log.warning("Failed to post change-request review: %s", result.stderr or result.stdout)
 
     log.info("=== CRITIC COMPLETE === PR #%d - Result: %s", pr_number, review_result)
     return 0
