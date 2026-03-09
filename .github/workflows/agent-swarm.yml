@@ -31,11 +31,7 @@ jobs:
       - name: Run architect agent
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          python .github/scripts/architect.py \
-            ${{ github.event.issue.number }} \
-            "${{ github.event.issue.title }}"
+        run: python .github/scripts/architect.py ${{ github.event.issue.number }} "${{ github.event.issue.title }}"
 
   critic:
     if: >-
@@ -55,9 +51,7 @@ jobs:
       - name: Run critic agent
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          python .github/scripts/critic.py ${{ github.event.pull_request.number }}
+        run: python .github/scripts/critic.py ${{ github.event.pull_request.number }}
 
   janitor:
     if: >-
@@ -77,21 +71,15 @@ jobs:
       - name: Add fixing label
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:fixing"
+        run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:fixing"
 
       - name: Run janitor agent
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          python .github/scripts/janitor.py ${{ github.event.pull_request.number }}
+        run: python .github/scripts/janitor.py ${{ github.event.pull_request.number }}
 
       - name: Remove fixing label
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:fixing"
+        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:fixing"
