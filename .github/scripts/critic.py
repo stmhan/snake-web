@@ -111,12 +111,18 @@ def main(pr_number: int) -> int:
         result = run_gh("pr", "review", str(pr_number), "--approve", "--body", review_body)
         if result.returncode != 0:
             log.warning("Failed to post approval review: %s", result.stderr or result.stdout)
+            log.info("Falling back to PR comment...")
+            run_gh("pr", "comment", str(pr_number), "--body",
+                   f"**Review: {review_result}**\n\n{review_body}")
     else:
         review_result = "CHANGES REQUESTED"
         log.info("Review result: %s", review_result)
         result = run_gh("pr", "review", str(pr_number), "--request-changes", "--body", review_body)
         if result.returncode != 0:
             log.warning("Failed to post change-request review: %s", result.stderr or result.stdout)
+            log.info("Falling back to PR comment...")
+            run_gh("pr", "comment", str(pr_number), "--body",
+                   f"**Review: {review_result}**\n\n{review_body}")
 
     log.info("=== CRITIC COMPLETE === PR #%d - Result: %s", pr_number, review_result)
     return 0
