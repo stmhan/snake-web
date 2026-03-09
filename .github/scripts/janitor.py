@@ -83,7 +83,7 @@ def main(pr_number: int) -> int:
     log.info("Fetching review feedback for PR #%d...", pr_number)
     result = run_gh("pr", "view", str(pr_number), "--json", "reviews")
     if result.returncode != 0:
-        log.error("Failed to fetch PR reviews: %s", result.stdout)
+        log.error("Failed to fetch PR reviews: %s", result.stderr or result.stdout)
         return 1
 
     try:
