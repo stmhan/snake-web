@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "claude-agent-swarm configuration",
+  "description": "Configuration for the claude-agent-swarm AI automation system.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Project name."
+        },
+        "stack": {
+          "type": "string",
+          "description": "Tech stack description."
+        },
+        "testCommand": {
+          "type": "string",
+          "description": "Command to run tests."
+        },
+        "lintCommand": {
+          "type": "string",
+          "description": "Command to run linter."
+        }
+      },
+      "additionalProperties": false
+    },
+    "agents": {
+      "type": "object",
+      "properties": {
+        "architect": {
+          "type": "object",
+          "properties": {
+            "branchPrefix": {
+              "type": "string",
+              "default": "feat/issue-",
+              "description": "Prefix for feature branches."
+            },
+            "commitPrefix": {
+              "type": "string",
+              "default": "feat",
+              "description": "Prefix for commit messages."
+            },
+            "maxTurns": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 100,
+              "description": "Max Claude CLI turns for implementation."
+            }
+          },
+          "additionalProperties": false
+        },
+        "critic": {
+          "type": "object",
+          "properties": {
+            "reviewCriteria": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of review criteria."
+            },
+            "maxDiffKB": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 100,
+              "description": "Max diff size in KB before truncation."
+            }
+          },
+          "additionalProperties": false
+        },
+        "janitor": {
+          "type": "object",
+          "properties": {
+            "maxRetries": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 3,
+              "description": "Max fix iterations before giving up."
+            },
+            "maxTurns": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 30,
+              "description": "Max Claude CLI turns for fixes."
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "agentMaxFileKB": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 10,
+          "description": "Max size per .agent-swarm/agents file in KB."
+        },
+        "agentMaxTotalKB": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 50,
+          "description": "Total budget for all .agent-swarm/agents content in KB."
+        }
+      },
+      "additionalProperties": false
+    },
+    "logging": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": [
+            "DEBUG",
+            "INFO",
+            "WARNING",
+            "ERROR",
+            "CRITICAL"
+          ],
+          "default": "INFO",
+          "description": "Log level. Overridden by LOG_LEVEL env var."
+        },
+        "fileOutput": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable JSON lines file output."
+        },
+        "logDir": {
+          "type": "string",
+          "default": "logs",
+          "description": "Directory for .jsonl log files."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

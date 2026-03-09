@@ -1,0 +1,97 @@
+name: Claude Agent Swarm
+
+on:
+  issues:
+    types: [labeled]
+  pull_request:
+    types: [opened, synchronize]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  architect:
+    if: >-
+      github.event_name == 'issues' &&
+      github.event.label.name == 'agent:implement'
+    runs-on: [self-hosted, claude-max]
+    concurrency:
+      group: agent-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run architect agent
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          python .github/scripts/architect.py \
+            ${{ github.event.issue.number }} \
+            "${{ github.event.issue.title }}"
+
+  critic:
+    if: >-
+      github.event_name == 'pull_request' &&
+      !contains(github.event.pull_request.title, '[skip-review]') &&
+      !contains(join(github.event.pull_request.labels.*.name, ','), 'agent:fixing')
+    runs-on: [self-hosted, claude-max]
+    concurrency:
+      group: agent-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run critic agent
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          python .github/scripts/critic.py ${{ github.event.pull_request.number }}
+
+  janitor:
+    if: >-
+      github.event_name == 'pull_request_review' &&
+      github.event.review.state == 'changes_requested'
+    runs-on: [self-hosted, claude-max]
+    concurrency:
+      group: agent-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Add fixing label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:fixing"
+
+      - name: Run janitor agent
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          python .github/scripts/janitor.py ${{ github.event.pull_request.number }}
+
+      - name: Remove fixing label
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:fixing"
