@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <div class="header">
+      <span class="score" id="score">Score: 0</span>
+    </div>
+    <div style="position: relative;">
+      <canvas id="gameCanvas" width="400" height="400"></canvas>
+      <div class="overlay hidden" id="overlay">
+        <div class="overlay-text" id="overlayText">Game Over</div>
+        <div class="overlay-sub" id="overlaySub">Press Space to restart</div>
+      </div>
+    </div>
+    <div class="instructions">Arrow keys to move / Space to restart</div>
+  </div>
+  <script src="game.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
