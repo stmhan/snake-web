@@ -115,32 +115,39 @@ def main(issue_number: int, issue_title: str) -> int:
         run_gh("issue", "edit", str(issue_number), "--remove-label", "agent:in-progress")
         return 1
 
-    # --- Stage and commit ---
-    has_changes = run_git("status", "--porcelain")
-    if not has_changes.stdout.strip():
+    # --- Stage and commit (only if there are uncommitted changes) ---
+    uncommitted = run_git("status", "--porcelain")
+    if uncommitted.stdout.strip():
+        log.info("Staging and committing changes...")
+        result = run_git("add", "-A")
+        if result.returncode != 0:
+            log.error("Failed to stage changes")
+            run_gh("issue", "edit", str(issue_number), "--remove-label", "agent:in-progress")
+            return 1
+
+        commit_message = f"{commit_prefix}: implement #{issue_number} {issue_title}"
+        result = run_git("commit", "-m", commit_message)
+        if result.returncode != 0:
+            log.error("Failed to commit changes")
+            run_gh("issue", "edit", str(issue_number), "--remove-label", "agent:in-progress")
+            return 1
+    else:
+        log.info("No uncommitted changes (Claude may have committed directly).")
+
+    # --- Check for any committed changes vs main ---
+    has_diff = run_git("diff", "main..HEAD", "--stat")
+    if not has_diff.stdout.strip():
         log.info("No changes were made by Claude. Exiting.")
         run_gh("issue", "edit", str(issue_number), "--remove-label", "agent:in-progress")
         return 0
 
-    log.info("Staging and committing changes...")
-    result = run_git("add", "-A")
-    if result.returncode != 0:
-        log.error("Failed to stage changes")
-        run_gh("issue", "edit", str(issue_number), "--remove-label", "agent:in-progress")
-        return 1
+    log.info("Changes detected vs main:\n%s", has_diff.stdout.strip())
 
-    commit_message = f"{commit_prefix}: implement #{issue_number} {issue_title}"
-    result = run_git("commit", "-m", commit_message)
-    if result.returncode != 0:
-        log.error("Failed to commit changes")
-        run_gh("issue", "edit", str(issue_number), "--remove-label", "agent:in-progress")
-        return 1
-
-    # --- Push and create PR ---
+    # --- Push (force to handle case where Claude already pushed) ---
     log.info("Pushing branch %s...", safe_branch)
-    result = run_git("push", "-u", "origin", safe_branch)
+    result = run_git("push", "-u", "origin", safe_branch, "--force-with-lease")
     if result.returncode != 0:
-        log.error("Failed to push branch")
+        log.error("Failed to push branch: %s", result.stderr or result.stdout)
         run_gh("issue", "edit", str(issue_number), "--remove-label", "agent:in-progress")
         return 1
 
