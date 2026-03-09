@@ -18,11 +18,11 @@ log = get_logger("critic")
 
 
 def run_git(*args) -> subprocess.CompletedProcess:
-    return subprocess.run(["git"] + list(args), capture_output=True, text=True)
+    return subprocess.run(["git"] + list(args), capture_output=True, text=True, encoding="utf-8")
 
 
 def run_gh(*args) -> subprocess.CompletedProcess:
-    return subprocess.run(["gh"] + list(args), capture_output=True, text=True)
+    return subprocess.run(["gh"] + list(args), capture_output=True, text=True, encoding="utf-8")
 
 
 def main(pr_number: int) -> int:
