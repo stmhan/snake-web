@@ -1,0 +1,8 @@
+{
+  "name": "snake-web",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node src/test-runner.node.js"
+  }
+}

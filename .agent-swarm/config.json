@@ -2,8 +2,8 @@
   "$schema": "config.schema.json",
   "project": {
     "name": "snake-web",
-    "stack": "Unknown",
-    "testCommand": "",
+    "stack": "HTML/CSS/JavaScript",
+    "testCommand": "node src/test-runner.node.js",
     "lintCommand": ""
   },
   "agents": {
