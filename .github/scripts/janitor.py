@@ -19,11 +19,11 @@ log = get_logger("janitor")
 
 
 def run_git(*args) -> subprocess.CompletedProcess:
-    return subprocess.run(["git"] + list(args), capture_output=True, text=True)
+    return subprocess.run(["git"] + list(args), capture_output=True, text=True, encoding="utf-8")
 
 
 def run_gh(*args) -> subprocess.CompletedProcess:
-    return subprocess.run(["gh"] + list(args), capture_output=True, text=True)
+    return subprocess.run(["gh"] + list(args), capture_output=True, text=True, encoding="utf-8")
 
 
 def _add_iteration_label(pr_number: int, iteration: int) -> None:
