@@ -61,18 +61,17 @@ jobs:
       group: agent-${{ github.event.pull_request.number }}
       cancel-in-progress: false
     steps:
-      - name: Remove need-review label
-        if: github.event.action == 'labeled' && github.event.label.name == 'agent:need-review'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:need-review"
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
+
+      - name: Remove need-review label
+        if: github.event.action == 'labeled' && github.event.label.name == 'agent:need-review'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:need-review"
 
       - name: Run critic agent
         id: critic
@@ -84,7 +83,6 @@ jobs:
         if: steps.critic.outputs.review_result == 'CHANGES REQUESTED'
         env:
           GH_TOKEN: ${{ secrets.PAT }}
-          GH_REPO: ${{ github.repository }}
         run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:need-fix"
 
   janitor:
@@ -101,24 +99,22 @@ jobs:
       group: agent-${{ github.event.pull_request.number }}
       cancel-in-progress: false
     steps:
-      - name: Remove need-fix label
-        if: github.event.action == 'labeled' && github.event.label.name == 'agent:need-fix'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:need-fix"
-
-      - name: Add fixing label
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-        run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:fixing"
-
       - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
+
+      - name: Remove need-fix label
+        if: github.event.action == 'labeled' && github.event.label.name == 'agent:need-fix'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:need-fix"
+
+      - name: Add fixing label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:fixing"
 
       - name: Run janitor agent
         env:
@@ -129,11 +125,9 @@ jobs:
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
         run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:fixing"
 
       - name: Signal critic for re-review
         env:
           GH_TOKEN: ${{ secrets.PAT }}
-          GH_REPO: ${{ github.repository }}
         run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:need-review"
