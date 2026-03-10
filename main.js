@@ -141,7 +141,6 @@
 
   function startGame() {
     gameState = GAME_STATE.PLAYING;
-    hideOverlay();
     render();
     tickTimer = setInterval(tick, TICK_INTERVAL_MS);
   }
@@ -156,7 +155,7 @@
     stopGame();
     game.restart();
     updateScore();
-    render();
+    hideOverlay();
     startGame();
   }
 
@@ -167,6 +166,12 @@
       if (SPLASH_START_KEYS.indexOf(event.key) === -1) return;
       event.preventDefault();
       startGame();
+
+      var splashDirection = KEY_MAP[event.key];
+      if (splashDirection) {
+        game.snake.setDirection(splashDirection);
+      }
+
       return;
     }
 
