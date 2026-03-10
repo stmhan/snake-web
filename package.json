@@ -1,0 +1,8 @@
+{
+  "name": "snake-web",
+  "version": "1.0.0",
+  "description": "브라우저 기반 스네이크 게임",
+  "scripts": {
+    "test": "node --test game.test.js"
+  }
+}

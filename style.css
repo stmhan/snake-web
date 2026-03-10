@@ -1,0 +1,100 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #1a1a2e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #e0e0e0;
+}
+
+#game-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+#header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 4px;
+}
+
+#header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #4ecca3;
+}
+
+#score {
+  font-size: 18px;
+  font-weight: 600;
+  color: #4ecca3;
+}
+
+#game-canvas {
+  border: 2px solid #4ecca3;
+  border-radius: 4px;
+  background-color: #16213e;
+}
+
+#overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  background-color: rgba(0, 0, 0, 0.75);
+  border-radius: 4px;
+}
+
+#overlay.hidden {
+  display: none;
+}
+
+#overlay-message {
+  font-size: 32px;
+  font-weight: 700;
+  color: #e74c3c;
+}
+
+#final-score {
+  font-size: 20px;
+  color: #e0e0e0;
+}
+
+#restart-button {
+  padding: 10px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+  background-color: #4ecca3;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#restart-button:hover {
+  background-color: #3ab88a;
+}
+
+#instructions {
+  font-size: 13px;
+  color: #888;
+}
