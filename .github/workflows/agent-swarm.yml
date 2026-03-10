@@ -79,8 +79,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python .github/scripts/critic.py ${{ github.event.pull_request.number }}
 
-      - name: Signal janitor if changes requested
-        if: steps.critic.outputs.review_result == 'CHANGES REQUESTED'
+      - name: Signal janitor if changes requested or suggestions found
+        if: steps.critic.outputs.review_result == 'CHANGES REQUESTED' || steps.critic.outputs.has_suggestions == 'true'
         env:
           GH_TOKEN: ${{ secrets.PAT }}
         run: gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --add-label "agent:need-fix"
