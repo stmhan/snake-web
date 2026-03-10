@@ -1,6 +1,6 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
-const { Snake, Game, DIRECTION, CELL_COUNT } = require('./game.js');
+const { Snake, Game, DIRECTION, CELL_COUNT, GAME_STATE } = require('./game.js');
 
 describe('Snake', () => {
   it('기본 위치와 방향으로 초기화된다', () => {
@@ -89,13 +89,30 @@ describe('Snake', () => {
 });
 
 describe('Game', () => {
-  it('초기화 시 뱀과 음식이 생성된다', () => {
+  it('초기화 시 뱀과 음식이 생성되고 SPLASH 상태로 시작한다', () => {
     const game = new Game();
 
     assert.ok(game.snake instanceof Snake);
     assert.ok(game.food);
     assert.equal(game.score, 0);
-    assert.equal(game.isGameOver, false);
+    assert.equal(game.state, GAME_STATE.SPLASH);
+  });
+
+  it('start 호출 시 SPLASH에서 PLAYING 상태로 전환된다', () => {
+    const game = new Game();
+    game.start();
+
+    assert.equal(game.state, GAME_STATE.PLAYING);
+  });
+
+  it('SPLASH 상태에서 update가 상태를 변경하지 않는다', () => {
+    const game = new Game();
+    const headBefore = { ...game.snake.getHead() };
+
+    game.update();
+
+    assert.deepEqual(game.snake.getHead(), headBefore);
+    assert.equal(game.state, GAME_STATE.SPLASH);
   });
 
   it('음식은 뱀의 몸 위에 생성되지 않는다', () => {
@@ -109,6 +126,7 @@ describe('Game', () => {
 
   it('뱀이 벽에 부딪히면 게임 오버가 된다', () => {
     const game = new Game();
+    game.start();
     game.snake.body = [
       { x: CELL_COUNT - 1, y: 5 },
       { x: CELL_COUNT - 2, y: 5 },
@@ -119,11 +137,12 @@ describe('Game', () => {
 
     game.update();
 
-    assert.equal(game.isGameOver, true);
+    assert.equal(game.state, GAME_STATE.GAME_OVER);
   });
 
   it('왼쪽 벽 충돌로 게임 오버가 된다', () => {
     const game = new Game();
+    game.start();
     game.snake.body = [
       { x: 0, y: 5 },
       { x: 1, y: 5 },
@@ -134,11 +153,12 @@ describe('Game', () => {
 
     game.update();
 
-    assert.equal(game.isGameOver, true);
+    assert.equal(game.state, GAME_STATE.GAME_OVER);
   });
 
   it('위쪽 벽 충돌로 게임 오버가 된다', () => {
     const game = new Game();
+    game.start();
     game.snake.body = [
       { x: 5, y: 0 },
       { x: 5, y: 1 },
@@ -149,11 +169,12 @@ describe('Game', () => {
 
     game.update();
 
-    assert.equal(game.isGameOver, true);
+    assert.equal(game.state, GAME_STATE.GAME_OVER);
   });
 
   it('아래쪽 벽 충돌로 게임 오버가 된다', () => {
     const game = new Game();
+    game.start();
     game.snake.body = [
       { x: 5, y: CELL_COUNT - 1 },
       { x: 5, y: CELL_COUNT - 2 },
@@ -164,11 +185,12 @@ describe('Game', () => {
 
     game.update();
 
-    assert.equal(game.isGameOver, true);
+    assert.equal(game.state, GAME_STATE.GAME_OVER);
   });
 
   it('뱀이 자기 몸에 부딪히면 게임 오버가 된다', () => {
     const game = new Game();
+    game.start();
     game.snake.body = [
       { x: 5, y: 5 },
       { x: 6, y: 5 },
@@ -182,11 +204,12 @@ describe('Game', () => {
 
     game.update();
 
-    assert.equal(game.isGameOver, true);
+    assert.equal(game.state, GAME_STATE.GAME_OVER);
   });
 
   it('음식을 먹으면 점수가 1 증가한다', () => {
     const game = new Game();
+    game.start();
     game.food = { x: 11, y: 10 };
     game.snake.body = [
       { x: 10, y: 10 },
@@ -203,6 +226,7 @@ describe('Game', () => {
 
   it('음식을 먹으면 새로운 음식이 생성된다', () => {
     const game = new Game();
+    game.start();
     game.food = { x: 11, y: 10 };
     game.snake.body = [
       { x: 10, y: 10 },
@@ -220,6 +244,7 @@ describe('Game', () => {
 
   it('음식을 먹으면 다음 이동에서 뱀 길이가 증가한다', () => {
     const game = new Game();
+    game.start();
     game.food = { x: 11, y: 10 };
     game.snake.body = [
       { x: 10, y: 10 },
@@ -237,7 +262,8 @@ describe('Game', () => {
 
   it('게임 오버 후에는 update가 상태를 변경하지 않는다', () => {
     const game = new Game();
-    game.isGameOver = true;
+    game.start();
+    game.state = GAME_STATE.GAME_OVER;
     const headBefore = { ...game.snake.getHead() };
     const scoreBefore = game.score;
 
@@ -249,6 +275,7 @@ describe('Game', () => {
 
   it('restart로 게임을 초기 상태로 되돌린다', () => {
     const game = new Game();
+    game.start();
     game.food = { x: 11, y: 10 };
     game.snake.body = [
       { x: 10, y: 10 },
@@ -258,14 +285,38 @@ describe('Game', () => {
     game.snake.direction = DIRECTION.RIGHT;
     game.snake.nextDirection = DIRECTION.RIGHT;
     game.update();
-    game.isGameOver = true;
+    game.state = GAME_STATE.GAME_OVER;
 
     game.restart();
 
-    assert.equal(game.isGameOver, false);
+    assert.equal(game.state, GAME_STATE.PLAYING);
     assert.equal(game.score, 0);
     assert.equal(game.snake.body.length, 3);
     assert.deepEqual(game.snake.getHead(), { x: 10, y: 10 });
     assert.ok(game.food);
+  });
+
+  it('PLAYING 상태에서 restart를 호출하면 PLAYING 상태가 유지된다', () => {
+    const game = new Game();
+    game.start();
+    game.update();
+
+    game.restart();
+
+    assert.equal(game.state, GAME_STATE.PLAYING);
+    assert.equal(game.score, 0);
+    assert.equal(game.snake.body.length, 3);
+    assert.deepEqual(game.snake.getHead(), { x: 10, y: 10 });
+  });
+
+  it('SPLASH 상태에서 restart를 호출하면 PLAYING 상태로 전환된다', () => {
+    const game = new Game();
+    assert.equal(game.state, GAME_STATE.SPLASH);
+
+    game.restart();
+
+    assert.equal(game.state, GAME_STATE.PLAYING);
+    assert.equal(game.score, 0);
+    assert.equal(game.snake.body.length, 3);
   });
 });
