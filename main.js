@@ -13,6 +13,8 @@
   var GRID_LINE_COLOR = '#1b2a4a';
 
   var canvas = document.getElementById('game-canvas');
+  canvas.width = CANVAS_SIZE;
+  canvas.height = CANVAS_SIZE;
   var context = canvas.getContext('2d');
   var scoreElement = document.getElementById('score');
   var overlay = document.getElementById('overlay');
@@ -75,6 +77,7 @@
 
   function drawFood() {
     var food = game.food;
+    if (!food) return;
 
     context.fillStyle = FOOD_COLOR;
     context.beginPath();

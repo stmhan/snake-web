@@ -76,7 +76,10 @@
   }
 
   Game.prototype.spawnFood = function() {
-    if (this.snake.body.length >= this.cellCount * this.cellCount) return;
+    if (this.snake.body.length >= this.cellCount * this.cellCount) {
+      this.food = null;
+      return;
+    }
 
     var position;
     do {
@@ -116,7 +119,7 @@
       return;
     }
 
-    if (head.x === this.food.x && head.y === this.food.y) {
+    if (this.food && head.x === this.food.x && head.y === this.food.y) {
       this.snake.grow();
       this.score++;
       this.spawnFood();
