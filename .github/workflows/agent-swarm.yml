@@ -43,7 +43,7 @@ jobs:
 
       - name: Run architect agent
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT }}
         run: python .github/scripts/architect.py ${{ github.event.issue.number }} "${{ github.event.issue.title }}"
 
   critic:
