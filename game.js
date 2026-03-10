@@ -79,7 +79,7 @@ class Game {
 
     this.snake.unshift(newHead);
 
-    if (newHead.x === this.food.x && newHead.y === this.food.y) {
+    if (this.food && newHead.x === this.food.x && newHead.y === this.food.y) {
       this.score += 1;
       this.food = this.spawnFood();
     } else {

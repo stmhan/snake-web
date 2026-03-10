@@ -60,14 +60,16 @@ function drawGrid() {
 }
 
 function drawSnake() {
+  const CELL_PADDING = 1;
+
   game.snake.forEach((segment, index) => {
     const isHead = index === 0;
     context.fillStyle = isHead ? '#4ecca3' : '#38b28a';
     context.fillRect(
-      segment.x * CELL_SIZE + 1,
-      segment.y * CELL_SIZE + 1,
-      CELL_SIZE - 2,
-      CELL_SIZE - 2
+      segment.x * CELL_SIZE + CELL_PADDING,
+      segment.y * CELL_SIZE + CELL_PADDING,
+      CELL_SIZE - CELL_PADDING * 2,
+      CELL_SIZE - CELL_PADDING * 2
     );
 
     if (isHead) {
@@ -107,6 +109,7 @@ function drawEyes(head) {
 }
 
 function drawFood() {
+  if (!game.food) return;
   context.fillStyle = '#e74c3c';
   context.beginPath();
   context.arc(
