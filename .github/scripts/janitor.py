@@ -6,6 +6,7 @@ to address the feedback, then commits and pushes the fixes.
 """
 
 import json
+import os
 import subprocess
 import sys
 
@@ -24,6 +25,14 @@ def run_git(*args) -> subprocess.CompletedProcess:
 
 def run_gh(*args) -> subprocess.CompletedProcess:
     return subprocess.run(["gh"] + list(args), capture_output=True, text=True, encoding="utf-8")
+
+
+def _set_output(key: str, value: str) -> None:
+    """Write a key=value pair to GITHUB_OUTPUT if available."""
+    github_output = os.environ.get("GITHUB_OUTPUT")
+    if github_output:
+        with open(github_output, "a", encoding="utf-8") as f:
+            f.write(f"{key}={value}\n")
 
 
 def _add_iteration_label(pr_number: int, iteration: int) -> None:
@@ -84,6 +93,7 @@ def main(pr_number: int) -> int:
             f"Janitor가 최대 수정 시도 횟수({max_retries}회)에 도달했습니다. "
             f"수동 개입이 필요합니다.\n\n---\nclaude-agent-swarm (janitor)에 의해 생성됨",
         )
+        _set_output("needs_rereview", "false")
         return 0
 
     current_iteration = iteration_count + 1
@@ -155,6 +165,7 @@ def main(pr_number: int) -> int:
                 f"PR #{pr_number}에 대한 리뷰 피드백을 찾을 수 없습니다.\n\n"
                 f"---\nclaude-agent-swarm (janitor)에 의해 생성됨",
             )
+            _set_output("needs_rereview", "false")
             return 0
 
     # --- Build prompt ---
@@ -222,6 +233,7 @@ def main(pr_number: int) -> int:
             f"({current_iteration}차 시도).\n\n"
             f"---\nclaude-agent-swarm (janitor)에 의해 생성됨",
         )
+        _set_output("needs_rereview", "false")
         return 0
 
     # --- Push (force to handle case where Claude already pushed) ---
@@ -240,6 +252,7 @@ def main(pr_number: int) -> int:
         f"---\nclaude-agent-swarm (janitor)에 의해 생성됨",
     )
 
+    _set_output("needs_rereview", "true")
     log.info("=== JANITOR COMPLETE === PR #%d - Fixes pushed (iteration %d)", pr_number, current_iteration)
     return 0
 

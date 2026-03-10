@@ -117,6 +117,7 @@ jobs:
         run: gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --add-label "agent:fixing"
 
       - name: Run janitor agent
+        id: janitor
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python .github/scripts/janitor.py ${{ github.event.pull_request.number }}
@@ -128,6 +129,7 @@ jobs:
         run: gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --remove-label "agent:fixing"
 
       - name: Signal critic for re-review
+        if: steps.janitor.outputs.needs_rereview == 'true'
         env:
           GH_TOKEN: ${{ secrets.PAT }}
         run: gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --add-label "agent:need-review"
