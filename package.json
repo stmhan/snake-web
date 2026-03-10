@@ -1,0 +1,9 @@
+{
+  "name": "snake-web",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Browser-based Snake game",
+  "scripts": {
+    "test": "node --test game.test.js"
+  }
+}
