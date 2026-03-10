@@ -126,6 +126,9 @@ def main(pr_number: int) -> int:
 
     log.info("=== CRITIC COMPLETE === PR #%d - Result: %s", pr_number, review_result)
 
+    # Check if approved review contains suggestions
+    has_suggestions = review_result == "APPROVED" and "제안]" in review_text
+
     # Write result for workflow to trigger janitor if needed.
     # GITHUB_TOKEN events don't trigger further workflows, so the
     # workflow must chain the janitor directly based on this output.
@@ -134,6 +137,7 @@ def main(pr_number: int) -> int:
     if github_output:
         with open(github_output, "a", encoding="utf-8") as f:
             f.write(f"review_result={review_result}\n")
+            f.write(f"has_suggestions={'true' if has_suggestions else 'false'}\n")
 
     return 0
 
