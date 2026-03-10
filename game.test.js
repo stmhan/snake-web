@@ -162,6 +162,38 @@ describe('자기 자신과 충돌', () => {
 
     assert.equal(game.isGameOver, true);
   });
+
+  it('꼬리 위치로 이동하면 충돌하지 않는다', () => {
+    const game = new Game(GRID_SIZE);
+    // 뱀이 꼬리 자리로 이동하는 상황 설정
+    game.snake = [
+      { x: 5, y: 5 },
+      { x: 5, y: 6 },
+      { x: 6, y: 6 },
+      { x: 6, y: 5 },
+    ];
+    game.direction = DIRECTION.RIGHT;
+    game.food = { x: 0, y: 0 };
+    game.tick();
+    // 머리가 (6, 5)로 이동 -> 꼬리가 pop되어 비어 있는 자리
+
+    assert.equal(game.isGameOver, false);
+  });
+});
+
+describe('음식 생성', () => {
+  it('뱀이 그리드 전체를 채우면 spawnFood가 null을 반환한다', () => {
+    const game = new Game(3);
+    // 3x3 그리드를 뱀으로 전부 채움
+    game.snake = [];
+    for (let y = 0; y < 3; y++) {
+      for (let x = 0; x < 3; x++) {
+        game.snake.push({ x, y });
+      }
+    }
+
+    assert.equal(game.spawnFood(), null);
+  });
 });
 
 describe('음식 먹기', () => {

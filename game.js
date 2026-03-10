@@ -45,6 +45,8 @@ class Game {
       this.snake.map(segment => `${segment.x},${segment.y}`)
     );
 
+    if (occupiedSet.size >= this.gridSize * this.gridSize) return null;
+
     let position;
     do {
       position = {
@@ -95,7 +97,7 @@ class Game {
   }
 
   isCollidingWithBody(position) {
-    return this.snake.some(
+    return this.snake.slice(0, -1).some(
       segment => segment.x === position.x && segment.y === position.y
     );
   }
