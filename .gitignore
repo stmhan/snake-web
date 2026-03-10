@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 logs/
 .agent-swarm/config.json
+node_modules/

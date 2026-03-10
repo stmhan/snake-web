@@ -1,0 +1,11 @@
+{
+  "name": "snake-web",
+  "version": "1.0.0",
+  "description": "브라우저 기반 Snake 게임",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
