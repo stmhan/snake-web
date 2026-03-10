@@ -295,4 +295,28 @@ describe('Game', () => {
     assert.deepEqual(game.snake.getHead(), { x: 10, y: 10 });
     assert.ok(game.food);
   });
+
+  it('PLAYING 상태에서 restart를 호출하면 PLAYING 상태가 유지된다', () => {
+    const game = new Game();
+    game.start();
+    game.update();
+
+    game.restart();
+
+    assert.equal(game.state, GAME_STATE.PLAYING);
+    assert.equal(game.score, 0);
+    assert.equal(game.snake.body.length, 3);
+    assert.deepEqual(game.snake.getHead(), { x: 10, y: 10 });
+  });
+
+  it('SPLASH 상태에서 restart를 호출하면 PLAYING 상태로 전환된다', () => {
+    const game = new Game();
+    assert.equal(game.state, GAME_STATE.SPLASH);
+
+    game.restart();
+
+    assert.equal(game.state, GAME_STATE.PLAYING);
+    assert.equal(game.score, 0);
+    assert.equal(game.snake.body.length, 3);
+  });
 });

@@ -151,6 +151,7 @@
     game.restart();
     updateScore();
     render();
+    hideOverlay();
     startTick();
   }
 
