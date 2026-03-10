@@ -131,10 +131,14 @@
     overlay.classList.add('hidden');
   }
 
+  function startTick() {
+    tickTimer = setInterval(tick, TICK_INTERVAL_MS);
+  }
+
   function startGame() {
     game.start();
     hideOverlay();
-    tickTimer = setInterval(tick, TICK_INTERVAL_MS);
+    startTick();
   }
 
   function stopGame() {
@@ -147,7 +151,7 @@
     game.restart();
     updateScore();
     render();
-    tickTimer = setInterval(tick, TICK_INTERVAL_MS);
+    startTick();
   }
 
   function dismissSplash() {
