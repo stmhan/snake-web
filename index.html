@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <div class="game-header">
+      <span>Snake Game</span>
+      <span class="score">Score: <span id="score">0</span></span>
+    </div>
+    <div class="canvas-wrapper">
+      <canvas id="game-canvas" width="400" height="400"></canvas>
+      <div id="game-over-overlay" class="game-over-overlay hidden">
+        <h2>Game Over</h2>
+        <p>Score: <span id="final-score">0</span></p>
+        <p>Press Space to restart</p>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
