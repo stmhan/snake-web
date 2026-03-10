@@ -51,18 +51,15 @@ export function changeDirection(snake, newDirection) {
 }
 
 export function placeFood(snakeBody) {
-  let position;
-  do {
-    position = {
-      x: Math.floor(Math.random() * CELL_COUNT),
-      y: Math.floor(Math.random() * CELL_COUNT),
-    };
-  } while (
-    snakeBody.some(
-      (segment) => segment.x === position.x && segment.y === position.y
-    )
-  );
-  return position;
+  const snakeSet = new Set(snakeBody.map(s => `${s.x},${s.y}`));
+  const emptyCells = [];
+  for (let x = 0; x < CELL_COUNT; x++) {
+    for (let y = 0; y < CELL_COUNT; y++) {
+      if (!snakeSet.has(`${x},${y}`)) emptyCells.push({ x, y });
+    }
+  }
+  if (emptyCells.length === 0) return null;
+  return emptyCells[Math.floor(Math.random() * emptyCells.length)];
 }
 
 export function checkWallCollision(head) {
@@ -104,8 +101,8 @@ export function tick(state) {
     return { ...state, isGameOver: true };
   }
 
-  const isEating =
-    nextHead.x === state.food.x && nextHead.y === state.food.y;
+  const isEating = state.food !== null
+    && nextHead.x === state.food.x && nextHead.y === state.food.y;
 
   const newSnake = moveSnake(state.snake, isEating);
 
