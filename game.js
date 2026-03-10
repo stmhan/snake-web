@@ -37,8 +37,8 @@
 
   Snake.prototype.setDirection = function(newDirection) {
     var isOpposite =
-      newDirection.x === -this.direction.x &&
-      newDirection.y === -this.direction.y;
+      newDirection.x === -this.nextDirection.x &&
+      newDirection.y === -this.nextDirection.y;
 
     if (isOpposite) return;
 
@@ -76,6 +76,8 @@
   }
 
   Game.prototype.spawnFood = function() {
+    if (this.snake.body.length >= this.cellCount * this.cellCount) return;
+
     var position;
     do {
       position = {

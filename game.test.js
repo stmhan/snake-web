@@ -65,10 +65,10 @@ describe('Snake', () => {
   it('같은 프레임에서 반대 방향 입력은 무시된다', () => {
     const snake = new Snake();
     snake.setDirection(DIRECTION.UP);
-    snake.setDirection(DIRECTION.LEFT);
+    snake.setDirection(DIRECTION.DOWN);
     snake.move();
 
-    // LEFT는 현재 방향(RIGHT)의 반대이므로 무시, UP이 적용됨
+    // DOWN은 nextDirection(UP)의 반대이므로 무시, UP이 적용됨
     assert.deepEqual(snake.getHead(), { x: 10, y: 9 });
   });
 
