@@ -166,6 +166,10 @@ def main(pr_number: int) -> int:
 
     # --- Invoke Claude ---
     log.info("Invoking Claude CLI to fix review feedback (iteration %d)...", current_iteration)
+
+    # Capture HEAD before Claude runs to detect direct commits
+    head_before = run_git("rev-parse", "HEAD").stdout.strip()
+
     claude_result = invoke_claude_cli(
         prompt,
         extra_args=["--dangerously-skip-permissions", "--max-turns", str(max_turns)],
@@ -177,9 +181,29 @@ def main(pr_number: int) -> int:
         log.error("Claude CLI exited with code %d", claude_result["exit_code"])
         return 1
 
-    # --- Stage and commit ---
+    # --- Stage and commit (only if there are uncommitted changes) ---
+    head_after = run_git("rev-parse", "HEAD").stdout.strip()
+    claude_committed = head_before != head_after
+
     has_changes = run_git("status", "--porcelain")
-    if not has_changes.stdout.strip():
+    if has_changes.stdout.strip():
+        log.info("Staging and committing fixes...")
+        result = run_git("add", "-A", "--", ":!__pycache__/", ":!*.pyc", ":!logs/")
+        if result.returncode != 0:
+            log.error("Failed to stage changes")
+            return 1
+
+        commit_message = (
+            f"fix: address review feedback for PR #{pr_number} "
+            f"(iteration {current_iteration}) [skip-review]"
+        )
+        result = run_git("commit", "-m", commit_message)
+        if result.returncode != 0:
+            log.error("Failed to commit changes")
+            return 1
+    elif claude_committed:
+        log.info("No uncommitted changes (Claude committed directly).")
+    else:
         log.info("No changes were made by Claude. Posting comment and exiting.")
         _add_iteration_label(pr_number, current_iteration)
         run_gh(
@@ -190,24 +214,9 @@ def main(pr_number: int) -> int:
         )
         return 0
 
-    log.info("Staging and committing fixes...")
-    result = run_git("add", "-A")
-    if result.returncode != 0:
-        log.error("Failed to stage changes")
-        return 1
-
-    commit_message = (
-        f"fix: address review feedback for PR #{pr_number} "
-        f"(iteration {current_iteration}) [skip-review]"
-    )
-    result = run_git("commit", "-m", commit_message)
-    if result.returncode != 0:
-        log.error("Failed to commit changes")
-        return 1
-
-    # --- Push ---
+    # --- Push (force to handle case where Claude already pushed) ---
     log.info("Pushing fixes...")
-    result = run_git("push")
+    result = run_git("push", "--force-with-lease")
     if result.returncode != 0:
         log.error("Failed to push fixes")
         return 1

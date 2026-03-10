@@ -15,4 +15,5 @@ You are an autonomous software engineer. Implement the following GitHub issue.
 5. Keep changes focused and minimal — only what the issue requires.
 6. Do NOT create unnecessary documentation files.
 7. Do NOT modify CI/CD configuration unless the issue explicitly requires it.
+8. NEVER commit `__pycache__/`, `*.pyc`, or `logs/` directories. If you use git, exclude them.
 {{AGENT_SECTION}}
