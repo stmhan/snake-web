@@ -71,7 +71,7 @@ jobs:
         if: github.event.action == 'labeled' && github.event.label.name == 'agent:need-review'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:need-review"
+        run: gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --remove-label "agent:need-review"
 
       - name: Run critic agent
         id: critic
@@ -83,7 +83,7 @@ jobs:
         if: steps.critic.outputs.review_result == 'CHANGES REQUESTED'
         env:
           GH_TOKEN: ${{ secrets.PAT }}
-        run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:need-fix"
+        run: gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --add-label "agent:need-fix"
 
   janitor:
     needs: ensure-labels
@@ -109,12 +109,12 @@ jobs:
         if: github.event.action == 'labeled' && github.event.label.name == 'agent:need-fix'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:need-fix"
+        run: gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --remove-label "agent:need-fix"
 
       - name: Add fixing label
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:fixing"
+        run: gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --add-label "agent:fixing"
 
       - name: Run janitor agent
         env:
@@ -125,9 +125,9 @@ jobs:
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:fixing"
+        run: gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --remove-label "agent:fixing"
 
       - name: Signal critic for re-review
         env:
           GH_TOKEN: ${{ secrets.PAT }}
-        run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:need-review"
+        run: gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --add-label "agent:need-review"
