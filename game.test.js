@@ -214,7 +214,8 @@ describe('Game', () => {
 
     game.update();
 
-    assert.notDeepEqual(game.food, { x: 11, y: 10 });
+    assert.notEqual(game.food, null);
+    assert.equal(game.isOnSnake(game.food), false);
   });
 
   it('음식을 먹으면 다음 이동에서 뱀 길이가 증가한다', () => {
