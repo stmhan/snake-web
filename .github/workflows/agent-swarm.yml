@@ -4,7 +4,7 @@ on:
   issues:
     types: [labeled]
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, labeled]
   pull_request_review:
     types: [submitted]
 
@@ -22,7 +22,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
-          for label in "agent:implement" "agent:in-progress" "agent:fixing"; do
+          for label in "agent:implement" "agent:in-progress" "agent:fixing" "agent:need-fix" "agent:need-review"; do
             gh label create "$label" --color "6f42c1" --description "Agent Swarm lifecycle label" --force
           done
 
@@ -46,20 +46,32 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python .github/scripts/architect.py ${{ github.event.issue.number }} "${{ github.event.issue.title }}"
 
+  # Critic: reviews PRs on open/synchronize, or when janitor signals via agent:need-review
   critic:
     needs: ensure-labels
     if: >-
-      github.event_name == 'pull_request' &&
-      !contains(github.event.pull_request.title, '[skip-review]') &&
-      !contains(join(github.event.pull_request.labels.*.name, ','), 'agent:fixing')
+      (github.event_name == 'pull_request' &&
+       github.event.action != 'labeled' &&
+       !contains(github.event.pull_request.title, '[skip-review]') &&
+       !contains(join(github.event.pull_request.labels.*.name, ','), 'agent:fixing')) ||
+      (github.event_name == 'pull_request' &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'agent:need-review')
     runs-on: [self-hosted, claude-max]
     concurrency:
       group: agent-${{ github.event.pull_request.number }}
       cancel-in-progress: false
     steps:
+      - name: Remove need-review label
+        if: github.event.action == 'labeled' && github.event.label.name == 'agent:need-review'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:need-review"
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
       - name: Run critic agent
@@ -68,55 +80,43 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python .github/scripts/critic.py ${{ github.event.pull_request.number }}
 
-      # GITHUB_TOKEN events don't trigger pull_request_review workflows,
-      # so chain the janitor directly when critic requests changes.
-      - name: Checkout PR branch for janitor
-        if: steps.critic.outputs.review_result == 'CHANGES REQUESTED'
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
-
-      - name: Add fixing label
+      - name: Signal janitor if changes requested
         if: steps.critic.outputs.review_result == 'CHANGES REQUESTED'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:fixing"
+          GH_TOKEN: ${{ secrets.PAT }}
+        run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:need-fix"
 
-      - name: Run janitor agent
-        if: steps.critic.outputs.review_result == 'CHANGES REQUESTED'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python .github/scripts/janitor.py ${{ github.event.pull_request.number }}
-
-      - name: Remove fixing label
-        if: always() && steps.critic.outputs.review_result == 'CHANGES REQUESTED'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:fixing"
-
-  # Fix review feedback (manual human review trigger)
+  # Janitor: fixes review feedback, triggered by critic label or human review
   janitor:
     needs: ensure-labels
     if: >-
-      github.event_name == 'pull_request_review' &&
-      github.event.review.state == 'changes_requested' &&
-      github.event.review.user.type != 'Bot'
+      (github.event_name == 'pull_request' &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'agent:need-fix') ||
+      (github.event_name == 'pull_request_review' &&
+       github.event.review.state == 'changes_requested' &&
+       github.event.review.user.type != 'Bot')
     runs-on: [self-hosted, claude-max]
     concurrency:
       group: agent-${{ github.event.pull_request.number }}
       cancel-in-progress: false
     steps:
-      - name: Checkout PR branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
+      - name: Remove need-fix label
+        if: github.event.action == 'labeled' && github.event.label.name == 'agent:need-fix'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:need-fix"
 
       - name: Add fixing label
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:fixing"
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
 
       - name: Run janitor agent
         env:
@@ -128,3 +128,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:fixing"
+
+      - name: Signal critic for re-review
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+        run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:need-review"
