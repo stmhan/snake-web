@@ -174,7 +174,11 @@
 
     if (direction) {
       event.preventDefault();
-      game.snake.setDirection(direction);
+
+      if (gameState === GAME_STATE.PLAYING) {
+        game.snake.setDirection(direction);
+      }
+
       return;
     }
 
