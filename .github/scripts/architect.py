@@ -119,7 +119,7 @@ def main(issue_number: int, issue_title: str) -> int:
     uncommitted = run_git("status", "--porcelain")
     if uncommitted.stdout.strip():
         log.info("Staging and committing changes...")
-        result = run_git("add", "-A")
+        result = run_git("add", "-A", "--", ":!__pycache__/", ":!*.pyc", ":!logs/")
         if result.returncode != 0:
             log.error("Failed to stage changes")
             run_gh("issue", "edit", str(issue_number), "--remove-label", "agent:in-progress")
