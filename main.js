@@ -4,6 +4,7 @@
   var GRID_SIZE = SnakeGame.GRID_SIZE;
   var CANVAS_SIZE = SnakeGame.CANVAS_SIZE;
   var DIRECTION = SnakeGame.DIRECTION;
+  var GAME_STATE = SnakeGame.GAME_STATE;
   var Game = SnakeGame.Game;
 
   var TICK_INTERVAL_MS = 120;
@@ -21,9 +22,13 @@
   var overlayTitle = document.getElementById('overlay-title');
   var overlayMessage = document.getElementById('overlay-message');
 
+  var SPLASH_BACKGROUND_COLOR = '#16213e';
+  var SPLASH_TITLE_COLOR = '#4ecca3';
+  var SPLASH_HINT_COLOR = '#b0b0b0';
+
   var game = new Game();
   var tickTimer = null;
-  var isStarted = false;
+  var gameState = GAME_STATE.SPLASH;
 
   var KEY_MAP = {
     ArrowUp: DIRECTION.UP,
@@ -91,6 +96,21 @@
     context.fill();
   }
 
+  function drawSplashScreen() {
+    context.fillStyle = SPLASH_BACKGROUND_COLOR;
+    context.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+
+    context.fillStyle = SPLASH_TITLE_COLOR;
+    context.font = 'bold 32px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText('Hurray Claude Code~!', CANVAS_SIZE / 2, CANVAS_SIZE / 2);
+
+    context.fillStyle = SPLASH_HINT_COLOR;
+    context.font = '16px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+    context.fillText('Press any key to start', CANVAS_SIZE / 2, CANVAS_SIZE / 2 + 50);
+  }
+
   function tick() {
     game.update();
     render();
@@ -117,12 +137,14 @@
   }
 
   function startGame() {
-    isStarted = true;
+    gameState = GAME_STATE.PLAYING;
     hideOverlay();
+    render();
     tickTimer = setInterval(tick, TICK_INTERVAL_MS);
   }
 
   function stopGame() {
+    gameState = GAME_STATE.GAME_OVER;
     clearInterval(tickTimer);
     tickTimer = null;
   }
@@ -136,15 +158,16 @@
   }
 
   function handleKeyDown(event) {
+    if (gameState === GAME_STATE.SPLASH) {
+      event.preventDefault();
+      startGame();
+      return;
+    }
+
     var direction = KEY_MAP[event.key];
 
     if (direction) {
       event.preventDefault();
-
-      if (!isStarted) {
-        startGame();
-      }
-
       game.snake.setDirection(direction);
       return;
     }
@@ -152,16 +175,20 @@
     if (event.key === ' ') {
       event.preventDefault();
 
-      if (game.isGameOver) {
+      if (gameState === GAME_STATE.GAME_OVER) {
         restartGame();
-      } else if (!isStarted) {
-        startGame();
       }
     }
   }
 
-  document.addEventListener('keydown', handleKeyDown);
+  function handleCanvasClick() {
+    if (gameState === GAME_STATE.SPLASH) {
+      startGame();
+    }
+  }
 
-  render();
-  showOverlay('Snake', 'Press any arrow key to start');
+  document.addEventListener('keydown', handleKeyDown);
+  canvas.addEventListener('click', handleCanvasClick);
+
+  drawSplashScreen();
 })();

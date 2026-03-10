@@ -1,6 +1,6 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
-const { Snake, Game, DIRECTION, CELL_COUNT } = require('./game.js');
+const { Snake, Game, DIRECTION, CELL_COUNT, GAME_STATE } = require('./game.js');
 
 describe('Snake', () => {
   it('기본 위치와 방향으로 초기화된다', () => {
@@ -85,6 +85,18 @@ describe('Snake', () => {
     assert.equal(snake.body.length, 3);
     assert.deepEqual(snake.getHead(), { x: 10, y: 10 });
     assert.deepEqual(snake.direction, DIRECTION.RIGHT);
+  });
+});
+
+describe('GAME_STATE', () => {
+  it('SPLASH, PLAYING, GAME_OVER 상태를 포함한다', () => {
+    assert.equal(GAME_STATE.SPLASH, 'SPLASH');
+    assert.equal(GAME_STATE.PLAYING, 'PLAYING');
+    assert.equal(GAME_STATE.GAME_OVER, 'GAME_OVER');
+  });
+
+  it('정확히 3개의 상태만 포함한다', () => {
+    assert.equal(Object.keys(GAME_STATE).length, 3);
   });
 });
 

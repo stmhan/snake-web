@@ -12,6 +12,12 @@
     RIGHT: { x: 1, y: 0 }
   };
 
+  var GAME_STATE = {
+    SPLASH: 'SPLASH',
+    PLAYING: 'PLAYING',
+    GAME_OVER: 'GAME_OVER'
+  };
+
   var INITIAL_SNAKE_BODY = [
     { x: 10, y: 10 },
     { x: 9, y: 10 },
@@ -139,4 +145,5 @@
   exports.GRID_SIZE = GRID_SIZE;
   exports.CELL_COUNT = CELL_COUNT;
   exports.CANVAS_SIZE = CANVAS_SIZE;
+  exports.GAME_STATE = GAME_STATE;
 })(typeof module !== 'undefined' ? module.exports : (window.SnakeGame = {}));
