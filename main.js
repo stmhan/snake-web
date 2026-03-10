@@ -25,6 +25,9 @@
   var SPLASH_BACKGROUND_COLOR = '#16213e';
   var SPLASH_TITLE_COLOR = '#4ecca3';
   var SPLASH_HINT_COLOR = '#b0b0b0';
+  var SPLASH_TITLE_FONT_SIZE = 32;
+  var SPLASH_HINT_FONT_SIZE = 16;
+  var SPLASH_HINT_OFFSET_Y = 50;
 
   var game = new Game();
   var tickTimer = null;
@@ -101,14 +104,14 @@
     context.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
     context.fillStyle = SPLASH_TITLE_COLOR;
-    context.font = 'bold 32px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+    context.font = 'bold ' + SPLASH_TITLE_FONT_SIZE + 'px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
-    context.fillText('Hurray Claude Code~!', CANVAS_SIZE / 2, CANVAS_SIZE / 2);
+    context.fillText('Snake', CANVAS_SIZE / 2, CANVAS_SIZE / 2);
 
     context.fillStyle = SPLASH_HINT_COLOR;
-    context.font = '16px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
-    context.fillText('Press any key to start', CANVAS_SIZE / 2, CANVAS_SIZE / 2 + 50);
+    context.font = SPLASH_HINT_FONT_SIZE + 'px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+    context.fillText('Press Space or click to start', CANVAS_SIZE / 2, CANVAS_SIZE / 2 + SPLASH_HINT_OFFSET_Y);
   }
 
   function tick() {
@@ -157,8 +160,11 @@
     startGame();
   }
 
+  var SPLASH_START_KEYS = [' ', 'Enter', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+
   function handleKeyDown(event) {
     if (gameState === GAME_STATE.SPLASH) {
+      if (SPLASH_START_KEYS.indexOf(event.key) === -1) return;
       event.preventDefault();
       startGame();
       return;
