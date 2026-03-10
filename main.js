@@ -1,6 +1,8 @@
 const GRID_SIZE = 20;
 const CELL_SIZE = 24;
 const TICK_INTERVAL_MS = 120;
+const GRID_LINE_WIDTH = 0.5;
+const FOOD_PADDING = 2;
 
 const canvas = document.getElementById('game-canvas');
 const context = canvas.getContext('2d');
@@ -43,7 +45,7 @@ function draw() {
 
 function drawGrid() {
   context.strokeStyle = '#1a2744';
-  context.lineWidth = 0.5;
+  context.lineWidth = GRID_LINE_WIDTH;
 
   for (let i = 0; i <= GRID_SIZE; i++) {
     const position = i * CELL_SIZE;
@@ -115,7 +117,7 @@ function drawFood() {
   context.arc(
     game.food.x * CELL_SIZE + CELL_SIZE / 2,
     game.food.y * CELL_SIZE + CELL_SIZE / 2,
-    CELL_SIZE / 2 - 2,
+    CELL_SIZE / 2 - FOOD_PADDING,
     0,
     Math.PI * 2
   );
