@@ -65,6 +65,7 @@ jobs:
         if: github.event.action == 'labeled' && github.event.label.name == 'agent:need-review'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:need-review"
 
       - name: Checkout repository
@@ -83,6 +84,7 @@ jobs:
         if: steps.critic.outputs.review_result == 'CHANGES REQUESTED'
         env:
           GH_TOKEN: ${{ secrets.PAT }}
+          GH_REPO: ${{ github.repository }}
         run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:need-fix"
 
   janitor:
@@ -103,11 +105,13 @@ jobs:
         if: github.event.action == 'labeled' && github.event.label.name == 'agent:need-fix'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:need-fix"
 
       - name: Add fixing label
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:fixing"
 
       - name: Checkout PR branch
@@ -125,9 +129,11 @@ jobs:
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "agent:fixing"
 
       - name: Signal critic for re-review
         env:
           GH_TOKEN: ${{ secrets.PAT }}
+          GH_REPO: ${{ github.repository }}
         run: gh pr edit ${{ github.event.pull_request.number }} --add-label "agent:need-review"
