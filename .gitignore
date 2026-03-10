@@ -1,0 +1,6 @@
+
+# Added by claude-agent-swarm
+__pycache__/
+*.pyc
+logs/
+.agent-swarm/config.json
