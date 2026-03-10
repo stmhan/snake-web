@@ -12,6 +12,12 @@
     RIGHT: { x: 1, y: 0 }
   };
 
+  var GAME_STATE = {
+    SPLASH: 'SPLASH',
+    PLAYING: 'PLAYING',
+    GAME_OVER: 'GAME_OVER'
+  };
+
   var INITIAL_SNAKE_BODY = [
     { x: 10, y: 10 },
     { x: 9, y: 10 },
@@ -71,7 +77,7 @@
     this.snake = new Snake();
     this.food = null;
     this.score = 0;
-    this.isGameOver = false;
+    this.state = GAME_STATE.SPLASH;
     this.spawnFood();
   }
 
@@ -108,14 +114,20 @@
     });
   };
 
+  Game.prototype.start = function() {
+    if (this.state === GAME_STATE.SPLASH) {
+      this.state = GAME_STATE.PLAYING;
+    }
+  };
+
   Game.prototype.update = function() {
-    if (this.isGameOver) return;
+    if (this.state !== GAME_STATE.PLAYING) return;
 
     this.snake.move();
     var head = this.snake.getHead();
 
     if (this.checkWallCollision(head) || this.checkSelfCollision(head)) {
-      this.isGameOver = true;
+      this.state = GAME_STATE.GAME_OVER;
       return;
     }
 
@@ -129,13 +141,14 @@
   Game.prototype.restart = function() {
     this.snake.reset();
     this.score = 0;
-    this.isGameOver = false;
+    this.state = GAME_STATE.PLAYING;
     this.spawnFood();
   };
 
   exports.Snake = Snake;
   exports.Game = Game;
   exports.DIRECTION = DIRECTION;
+  exports.GAME_STATE = GAME_STATE;
   exports.GRID_SIZE = GRID_SIZE;
   exports.CELL_COUNT = CELL_COUNT;
   exports.CANVAS_SIZE = CANVAS_SIZE;
